@@ -94,3 +94,14 @@ class MlA2TrainingEvaluationStack(Stack):
         self.training_data_bucket.grant_read(self.sagemaker_execution_role)
         self.model_bucket.grant_read_write(self.sagemaker_execution_role)
         self.evaluation_bucket.grant_read_write(self.sagemaker_execution_role)
+        
+        
+        
+        # Step Functions: failure notification task
+        notify_failure = tasks.SnsPublish(
+            self,
+            "NotifyFailure",
+            topic=self.failure_topic,
+            subject="ML-A2 Training + Evaluation Pipeline Failed",
+            message=sfn.TaskInput.from_json_path_at("$"),
+        )
