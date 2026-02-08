@@ -44,4 +44,13 @@ class MlA2TrainingEvaluationStack(Stack):
             auto_delete_objects=True,
         )
 
- 
+        # S3 model artifacts
+        self.model_bucket = s3.Bucket(
+            self,
+            "ModelArtifactsBucket",
+            versioned=True,
+            encryption=s3.BucketEncryption.S3_MANAGED,
+            block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
+            removal_policy=RemovalPolicy.DESTROY,
+            auto_delete_objects=True,
+        )
