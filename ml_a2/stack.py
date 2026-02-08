@@ -81,3 +81,10 @@ class MlA2TrainingEvaluationStack(Stack):
             retention=logs.RetentionDays.ONE_WEEK,
             removal_policy=RemovalPolicy.DESTROY,
         )
+
+        # IAM role for SageMaker jobs
+        self.sagemaker_execution_role = iam.Role(
+            self,
+            "SageMakerExecutionRole",
+            assumed_by=iam.ServicePrincipal("sagemaker.amazonaws.com"),
+        )
