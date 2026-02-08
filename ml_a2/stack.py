@@ -88,3 +88,9 @@ class MlA2TrainingEvaluationStack(Stack):
             "SageMakerExecutionRole",
             assumed_by=iam.ServicePrincipal("sagemaker.amazonaws.com"),
         )
+        
+
+        # Allow SageMaker to read training data and write model/eval outputs
+        self.training_data_bucket.grant_read(self.sagemaker_execution_role)
+        self.model_bucket.grant_read_write(self.sagemaker_execution_role)
+        self.evaluation_bucket.grant_read_write(self.sagemaker_execution_role)
