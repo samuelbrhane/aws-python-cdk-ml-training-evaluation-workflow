@@ -289,3 +289,20 @@ class MlA2TrainingEvaluationStack(Stack):
             ),
             tracing_enabled=True,
         )
+        
+
+        # CloudWatch Alarm (failed executions) -> SNS
+        self.failed_executions_alarm = cw.Alarm(
+            self,
+            "StateMachineFailedExecutionsAlarm",
+            metric=self.state_machine.metric_failed(),
+            threshold=1,
+            evaluation_periods=1,
+            datapoints_to_alarm=1,
+            treat_missing_data=cw.TreatMissingData.NOT_BREACHING,
+            alarm_description="Alarm when the ML-A2 training/evaluation Step Functions execution fails.",
+        )
+
+        self.failed_executions_alarm.add_alarm_action(
+            cw_actions.SnsAction(self.failure_topic)
+        )
