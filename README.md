@@ -14,12 +14,6 @@ notifications.
 
 ### Architecture Diagram
 
-#### Static View
-
-![ML-A2 Architecture Diagram](diagrams/ml-a2-diagram.png)
-
-#### Animated Walkthrough
-
 ![ML-A2 Architecture Animation](diagrams/ml-a2-diagram.gif)
 
 ### Services Used
