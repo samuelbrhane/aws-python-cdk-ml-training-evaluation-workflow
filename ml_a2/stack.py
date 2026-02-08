@@ -160,3 +160,94 @@ class MlA2TrainingEvaluationStack(Stack):
                 "num_round": "20",
             },
         )
+
+
+        # Step 2: SageMaker Processing job (Evaluation)
+        processing_job_name = sfn.JsonPath.format(
+            "ml-a2-eval-{}",
+            sfn.JsonPath.string_at("$$.Execution.Name"),
+        )
+
+        evaluation_output_s3 = sfn.JsonPath.format(
+            f"s3://{self.evaluation_bucket.bucket_name}/evaluations/" + "{}",
+            sfn.JsonPath.string_at("$$.Execution.Name"),
+        )
+
+        # This points at the model artifacts produced by training.
+        model_artifacts_s3_prefix = sfn.JsonPath.format(
+            f"s3://{self.model_bucket.bucket_name}/models/" + "{}",
+            sfn.JsonPath.string_at("$$.Execution.Name"),
+        )
+
+        # Evaluation script placeholder location (upload after deploy)
+        evaluation_script_s3 = f"s3://{self.training_data_bucket.bucket_name}/evaluation/evaluate.py"
+
+        eval_task = tasks.SageMakerCreateProcessingJob(
+            self,
+            "EvaluateModel",
+            integration_pattern=sfn.IntegrationPattern.RUN_JOB,
+            processing_job_name=processing_job_name,
+            role=self.sagemaker_execution_role,
+            app_specification=tasks.AppSpecification(
+                image_uri="683313688378.dkr.ecr.us-east-1.amazonaws.com/sagemaker-scikit-learn:1.2-1-cpu-py3",
+                container_entrypoint=["python3", "/opt/ml/processing/code/evaluate.py"],
+            ),
+            processing_resources=tasks.ProcessingResources(
+                cluster_config=tasks.ClusterConfig(
+                    instance_count=1,
+                    instance_type=ec2.InstanceType("ml.m5.large"),
+                    volume_size=Size.gibibytes(30),
+                )
+            ),
+            processing_inputs=[
+                
+                # Pull evaluation code from S3 into /opt/ml/processing/code/
+                tasks.ProcessingInput(
+                    input_name="code",
+                    source=tasks.ProcessingInputSource(
+                        s3_input=tasks.S3Input(
+                            s3_uri=evaluation_script_s3,
+                            local_path="/opt/ml/processing/code",
+                            s3_data_type=tasks.S3DataType.S3_PREFIX,
+                            s3_input_mode=tasks.S3InputMode.FILE,
+                        )
+                    ),
+                ),
+                
+                # Pull model artifacts output by training into /opt/ml/processing/model/
+                tasks.ProcessingInput(
+                    input_name="model",
+                    source=tasks.ProcessingInputSource(
+                        s3_input=tasks.S3Input(
+                            s3_uri=model_artifacts_s3_prefix,
+                            local_path="/opt/ml/processing/model",
+                            s3_data_type=tasks.S3DataType.S3_PREFIX,
+                            s3_input_mode=tasks.S3InputMode.FILE,
+                        )
+                    ),
+                ),
+                
+                # allow the evaluator to read a validation set if you add it
+                tasks.ProcessingInput(
+                    input_name="validation",
+                    source=tasks.ProcessingInputSource(
+                        s3_input=tasks.S3Input(
+                            s3_uri=f"s3://{self.training_data_bucket.bucket_name}/validation/",
+                            local_path="/opt/ml/processing/validation",
+                            s3_data_type=tasks.S3DataType.S3_PREFIX,
+                            s3_input_mode=tasks.S3InputMode.FILE,
+                        )
+                    ),
+                ),
+            ],
+            processing_outputs=[
+                tasks.ProcessingOutput(
+                    output_name="evaluation",
+                    source="/opt/ml/processing/output",
+                    destination=tasks.S3Output(
+                        s3_uri=evaluation_output_s3,
+                        s3_upload_mode=tasks.S3UploadMode.END_OF_JOB,
+                    ),
+                )
+            ],
+        )
