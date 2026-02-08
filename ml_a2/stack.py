@@ -251,3 +251,24 @@ class MlA2TrainingEvaluationStack(Stack):
                 )
             ],
         )
+        
+        
+        # Reliability: retries + catch
+        for task in (train_task, eval_task):
+            task.add_retry(
+                errors=[
+                    "SageMaker.AmazonSageMakerException",
+                    "SageMaker.ResourceLimitExceeded",
+                    "SageMaker.ThrottlingException",
+                    "States.Timeout",
+                    "States.TaskFailed",
+                ],
+                interval=Duration.seconds(30),
+                backoff_rate=2.0,
+                max_attempts=3,
+            )
+            task.add_catch(
+                handler=notify_failure,
+                errors=["States.ALL"],
+                result_path="$.error",
+            )
