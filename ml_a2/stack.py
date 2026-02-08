@@ -73,3 +73,11 @@ class MlA2TrainingEvaluationStack(Stack):
             "FailureAlertsTopic",
             display_name="ML-A2 Training/Evaluation Failure Alerts",
         )
+
+        # CloudWatch Logs (Step Functions)
+        self.sfn_log_group = logs.LogGroup(
+            self,
+            "StateMachineLogs",
+            retention=logs.RetentionDays.ONE_WEEK,
+            removal_policy=RemovalPolicy.DESTROY,
+        )
