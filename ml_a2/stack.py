@@ -65,3 +65,11 @@ class MlA2TrainingEvaluationStack(Stack):
             removal_policy=RemovalPolicy.DESTROY,
             auto_delete_objects=True,
         )
+        
+        
+        # SNS topic for failure alerts
+        self.failure_topic = sns.Topic(
+            self,
+            "FailureAlertsTopic",
+            display_name="ML-A2 Training/Evaluation Failure Alerts",
+        )
