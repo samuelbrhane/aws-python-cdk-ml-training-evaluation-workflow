@@ -54,3 +54,14 @@ class MlA2TrainingEvaluationStack(Stack):
             removal_policy=RemovalPolicy.DESTROY,
             auto_delete_objects=True,
         )
+
+        # S3 evaluation outputs 
+        self.evaluation_bucket = s3.Bucket(
+            self,
+            "EvaluationBucket",
+            versioned=True,
+            encryption=s3.BucketEncryption.S3_MANAGED,
+            block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
+            removal_policy=RemovalPolicy.DESTROY,
+            auto_delete_objects=True,
+        )
