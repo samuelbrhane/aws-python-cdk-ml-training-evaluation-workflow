@@ -14,7 +14,13 @@ notifications.
 
 ### Architecture Diagram
 
+#### Static View
+
 ![ML-A2 Architecture Diagram](diagrams/ml-a2-diagram.png)
+
+#### Animated Walkthrough
+
+![ML-A2 Architecture Animation](diagrams/ml-a2-diagram.gif)
 
 ### Services Used
 
@@ -67,6 +73,8 @@ Execution flow:
 ├── diagrams/
 │   ├── ml-a2-diagram.drawio
 │   ├── ml-a2-diagram.png
+│   ├── ml-a2-diagram.gif
+│   ├── ml-a2-diagram.mp4
 │   └── services_used.png
 ├── ml_a2/
 │   ├── __init__.py
@@ -80,6 +88,7 @@ Execution flow:
 ├── LICENSE
 ├── README.md
 └── requirements.txt
+
 ```
 
 ## 🛠️ USING THIS REPOSITORY
