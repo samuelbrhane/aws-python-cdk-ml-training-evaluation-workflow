@@ -272,3 +272,20 @@ class MlA2TrainingEvaluationStack(Stack):
                 errors=["States.ALL"],
                 result_path="$.error",
             )
+
+
+    
+        # Step Functions definition: Training -> Evaluation
+        definition = sfn.Chain.start(train_task).next(eval_task)
+
+        self.state_machine = sfn.StateMachine(
+            self,
+            "TrainingEvaluationStateMachine",
+            definition=definition,
+            timeout=Duration.hours(2),
+            logs=sfn.LogOptions(
+                destination=self.sfn_log_group,
+                level=sfn.LogLevel.ALL,
+            ),
+            tracing_enabled=True,
+        )
